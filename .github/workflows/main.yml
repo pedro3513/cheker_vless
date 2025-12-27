@@ -8,11 +8,13 @@ on:
 jobs:
   update:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Явно разрешаем запись
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0 # Важно для корректного pull/push
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -25,13 +27,12 @@ jobs:
       - name: Run checker
         run: python vless_checker.py
 
-      - name: Save results
+      - name: Force push changes
         run: |
-          git config --local user.name "GitHub Action"
-          git config --local user.email "action@github.com"
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git add output.txt
-          # Пытаемся закоммитить, если есть изменения
           git commit -m "Update output.txt $(date)" || exit 0
-          # Забираем изменения с сервера перед пушем, чтобы не было ошибки rejected
-          git pull origin main --rebase
+          # Силовой пуш: забирает изменения и ставит коммит сверху
+          git pull --rebase origin main
           git push origin main
