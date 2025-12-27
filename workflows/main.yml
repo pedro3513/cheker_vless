@@ -1,16 +1,20 @@
-name: Update VLESS List
+name: Auto Update VLESS
 
 on:
   schedule:
-    - cron: '0 */2 * * *' # Каждые 2 часа
-  workflow_dispatch:      # Кнопка ручного запуска
+    - cron: '0 */2 * * *'
+  workflow_dispatch:
 
 jobs:
   update:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4 # Обновили до v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -23,15 +27,11 @@ jobs:
       - name: Run checker
         run: python vless_checker.py
 
-     - name: Save results
+      - name: Commit and Push
         run: |
-          git config --local user.name "GitHub Action"
-          git config --local user.email "action@github.com"
-          # Забираем изменения с сервера, чтобы не было конфликта
-          git pull origin main --rebase
-          # Добавляем файл
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add output.txt
-          # Фиксируем изменения (если они есть)
-          git commit -m "Update output.txt $(date)" || echo "No changes to commit"
-          # Выталкиваем обратно в репозиторий
-          git push origin main
+          git commit -m "Update output.txt $(date)" || exit 0
+          # Магия: пушим во временную ветку и сливаем ее в main
+          git push origin HEAD:main --force
