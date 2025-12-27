@@ -27,7 +27,11 @@ jobs:
         run: |
           git config --local user.name "GitHub Action"
           git config --local user.email "action@github.com"
-          git pull origin main --rebase  # Добавляем эту строку
+          # Забираем изменения с сервера, чтобы не было конфликта
+          git pull origin main --rebase
+          # Добавляем файл
           git add output.txt
-          git commit -m "Update output.txt $(date)" || exit 0
+          # Фиксируем изменения (если они есть)
+          git commit -m "Update output.txt $(date)" || echo "No changes to commit"
+          # Выталкиваем обратно в репозиторий
           git push origin main
