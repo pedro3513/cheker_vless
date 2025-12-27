@@ -22,17 +22,14 @@ jobs:
       - name: Install dependencies
         run: pip install requests
 
-      - name: Run checker
+      - name: Run Filter
         run: python vless_checker.py
 
       - name: Commit and Push
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # Если файла нет, создаем его, чтобы команда add не падала
           touch output.txt
-          
           git add output.txt
-          git commit -m "Update output.txt $(date)" || exit 0
+          git commit -m "Update working configs $(date)" || exit 0
           git push origin HEAD:main --force
