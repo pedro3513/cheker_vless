@@ -1,0 +1,32 @@
+name: Update VLESS List
+
+on:
+  schedule:
+    - cron: '0 */2 * * *' # Каждые 2 часа
+  workflow_dispatch:      # Кнопка ручного запуска
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run checker
+        run: python vless_checker.py
+
+      - name: Save results
+        run: |
+          git config --local user.name "GitHub Action"
+          git config --local user.email "action@github.com"
+          git add output.txt
+          git commit -m "Update output.txt $(date)" || exit 0
+          git push
