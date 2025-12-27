@@ -9,12 +9,12 @@ jobs:
   update:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Явно разрешаем запись
+      contents: write
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4 # Обновили до v4
         with:
-          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -27,12 +27,11 @@ jobs:
       - name: Run checker
         run: python vless_checker.py
 
-      - name: Force push changes
+      - name: Commit and Push
         run: |
-          git config --local user.name "github-actions[bot]"
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add output.txt
           git commit -m "Update output.txt $(date)" || exit 0
-          # Силовой пуш: забирает изменения и ставит коммит сверху
-          git pull --rebase origin main
-          git push origin main
+          # Магия: пушим во временную ветку и сливаем ее в main
+          git push origin HEAD:main --force
